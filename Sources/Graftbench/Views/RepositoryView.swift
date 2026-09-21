@@ -3,6 +3,7 @@ import SwiftUI
 struct RepositoryView: View {
     @Bindable var repo: RepositoryModel
     @Environment(AppModel.self) private var app
+    @Environment(\.openSettings) private var openSettings
     @State private var sidebarVisible = true
     @State private var showPalette = false
     @State private var showDetachedPrompt = false
@@ -212,6 +213,13 @@ struct RepositoryView: View {
 
             stashMenu
             advancedMenu
+
+            Button {
+                openSettings()
+            } label: {
+                Label("Settings", systemImage: "gearshape")
+            }
+            .help("Settings (⌘,)")
         }
     }
 

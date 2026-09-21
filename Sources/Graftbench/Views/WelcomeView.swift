@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 struct WelcomeView: View {
     @Environment(AppModel.self) private var app
+    @Environment(\.openSettings) private var openSettings
     private var prefs = Preferences.shared
     @State private var showClone = false
 
@@ -57,6 +58,17 @@ struct WelcomeView: View {
                 }
                 .controlSize(.large)
                 .help("Clone a remote repository")
+
+                Button {
+                    openSettings()
+                } label: {
+                    Label("Settings…", systemImage: "gearshape")
+                        .frame(maxWidth: 260, alignment: .leading)
+                }
+                .controlSize(.large)
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .help("Appearance, accent color, translucency and more (⌘,)")
             }
 
             Spacer()

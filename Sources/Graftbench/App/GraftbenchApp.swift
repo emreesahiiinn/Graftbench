@@ -14,6 +14,16 @@ struct GraftbenchApp: App {
         }
         .windowToolbarStyle(.unifiedCompact)
         .commands {
+            // macOS normally injects "Settings…" from the `Settings` scene
+            // below, but on recent macOS that auto-item can go missing — wire it
+            // explicitly so ⌘, and the menu item are always present.
+            CommandGroup(replacing: .appSettings) {
+                SettingsLink {
+                    Text("Settings…")
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+
             CommandGroup(replacing: .newItem) {
                 Button("Open Repository…") {
                     if let url = chooseRepositoryFolder() {
