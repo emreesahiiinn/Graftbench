@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 #
-# Cut a Sparkle-enabled Graftbench release.
+# Cut a Sparkle-enabled Graftbench release — LOCAL FALLBACK.
+#
+# The normal path is CI: push a tag (e.g. v0.2.0) and .github/workflows/release.yml
+# builds, signs and publishes everything. Use this script only to cut a release by
+# hand (CI down, or a local test). It signs with your Keychain key.
 #
 #   Scripts/sparkle_release.sh 0.2.0
 #
@@ -63,13 +67,14 @@ echo "▸ Signing + generating appcast…"
 "$BIN/generate_appcast" \
     --download-url-prefix "https://github.com/$REPO/releases/download/v$VER/" \
     --link "https://github.com/$REPO" \
-    -o "$ROOT/appcast.xml" \
+    -o "$ROOT/dist/appcast.xml" \
     "$UPDATES"
 
 echo
-echo "✓ appcast.xml updated for v$VER"
-echo "Publish it:"
-echo "  1. git add appcast.xml && git commit -m \"release: appcast for v$VER\" && git push"
-echo "  2. Create/edit the GitHub release for tag v$VER and upload this exact file:"
+echo "✓ dist/appcast.xml generated for v$VER"
+echo "Publish it — create the GitHub release for tag v$VER and upload BOTH:"
 echo "       $ROOT/dist/Graftbench.dmg"
-echo "  3. (optional) update Casks/graftbench.rb version+sha256 for Homebrew users."
+echo "       $ROOT/dist/appcast.xml"
+echo "  (SUFeedURL points at releases/latest/download/appcast.xml, so the feed"
+echo "   must be attached to the release, not committed to the repo.)"
+echo "  Optional: update Casks/graftbench.rb version+sha256 for Homebrew users."

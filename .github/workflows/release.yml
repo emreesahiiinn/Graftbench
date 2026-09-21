@@ -1,10 +1,15 @@
 name: Release
 
-# Sparkle releases are cut locally with Scripts/sparkle_release.sh so the DMG
-# Sparkle points at is the exact file that was signed with your private key.
-# This workflow is therefore manual-only (it builds an UNSIGNED DMG, handy for a
-# quick throwaway build) and is intentionally not triggered by pushing a tag.
+# Push a tag like v0.2.0 and this builds a universal (arm64 + x86_64),
+# Sparkle-signed DMG, generates the appcast, and publishes the GitHub release
+# with the DMG, its checksum and appcast.xml attached.
+#
+# Requires one repo secret: SPARKLE_PRIVATE_KEY — the EdDSA private key exported
+# once with `.sparkle-tools/bin/generate_keys -x <file>`. It signs each update;
+# the matching public key is in Packaging/Info.plist (SUPublicEDKey).
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -19,12 +24,28 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Build DMG
+      - name: Build universal DMG
         run: ./Scripts/package_dmg.sh
 
-      - name: Checksum
+      - name: Sign update + generate appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
-          shasum -a 256 dist/Graftbench.dmg | tee dist/Graftbench.dmg.sha256
+          if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
+            echo "::error::SPARKLE_PRIVATE_KEY secret is missing. Export it once with 'generate_keys -x' and add it under Settings → Secrets → Actions."
+            exit 1
+          fi
+          SPARKLE_TOOLS_VER=2.6.4
+          curl -fL "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_TOOLS_VER/Sparkle-$SPARKLE_TOOLS_VER.tar.xz" | tar -xJ bin
+          mkdir -p dist/updates
+          cp dist/Graftbench.dmg dist/updates/
+          echo "$SPARKLE_PRIVATE_KEY" | ./bin/generate_appcast --ed-key-file - \
+            --download-url-prefix "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/" \
+            --link "https://github.com/${{ github.repository }}" \
+            -o dist/appcast.xml dist/updates/
+
+      - name: Checksum
+        run: shasum -a 256 dist/Graftbench.dmg | tee dist/Graftbench.dmg.sha256
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
@@ -32,11 +53,13 @@ jobs:
           files: |
             dist/Graftbench.dmg
             dist/Graftbench.dmg.sha256
+            dist/appcast.xml
           generate_release_notes: true
           body: |
             ## Graftbench ${{ github.ref_name }}
 
             Download **Graftbench.dmg** below, open it, and drag Graftbench to Applications.
+            Installed copies auto-update from here on via **Check for Updates…**.
 
             > The app is ad-hoc signed (not notarized). On first launch, right-click the app → **Open**,
             > or run `xattr -dr com.apple.quarantine /Applications/Graftbench.app`.
