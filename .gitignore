@@ -1,0 +1,19 @@
+## Swift / SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+
+## Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+xcuserdata/
+DerivedData/
+*.xcuserstate
+
+## Build output
+/dist/
+*.app
+*.dmg
+
+## macOS
+.DS_Store
