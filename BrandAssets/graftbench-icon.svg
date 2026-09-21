@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Graftbench app icon</title>
+  <desc id="desc">A geometric G combined with a Git branch graph.</desc>
+  <defs>
+    <linearGradient id="gbGradient" x1="90" y1="75" x2="390" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22C1F1"/>
+      <stop offset="0.42" stop-color="#3478F6"/>
+      <stop offset="1" stop-color="#6D39F5"/>
+    </linearGradient>
+  </defs>
+  <path d="M392 106H218C126 106 80 160 80 254C80 348 129 406 222 406H365V278H246" stroke="url(#gbGradient)" stroke-width="84" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M174 165L136 299L234 351" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="174" cy="165" r="30" fill="#FFFFFF"/>
+  <circle cx="174" cy="165" r="13" fill="url(#gbGradient)"/>
+  <circle cx="136" cy="299" r="30" fill="#FFFFFF"/>
+  <circle cx="136" cy="299" r="13" fill="url(#gbGradient)"/>
+  <circle cx="234" cy="351" r="30" fill="#FFFFFF"/>
+  <circle cx="234" cy="351" r="13" fill="url(#gbGradient)"/>
+</svg>
