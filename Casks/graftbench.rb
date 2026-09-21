@@ -1,6 +1,6 @@
 cask "graftbench" do
-  version "0.1.0"
-  sha256 "cf540810998ed223ba41d47c59f72b825a604cb80fea334c9ff37b75014c3971"
+  version "0.2.0"
+  sha256 "77652e54c5e69a56a930cef5c6b6058e7b8f1e2662e066c15d009fa17bfdc505"
 
   url "https://github.com/emreesahiiinn/Graftbench/releases/download/v#{version}/Graftbench.dmg"
   name "Graftbench"
@@ -12,6 +12,8 @@ cask "graftbench" do
     url :url
     strategy :github_latest
   end
+
+  auto_updates true
 
   app "Graftbench.app"
 
