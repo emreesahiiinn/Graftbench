@@ -14,10 +14,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST="$ROOT/dist"
 APP="$DIST/$APP_NAME.app"
 
-echo "▸ Building ($CONFIG)…"
-swift build -c "$CONFIG" --package-path "$ROOT"
+echo "▸ Building ($CONFIG, universal arm64 + x86_64)…"
+ARCHS=(--arch arm64 --arch x86_64)
+swift build -c "$CONFIG" --package-path "$ROOT" "${ARCHS[@]}"
 
-BIN_DIR="$(swift build -c "$CONFIG" --package-path "$ROOT" --show-bin-path)"
+BIN_DIR="$(swift build -c "$CONFIG" --package-path "$ROOT" "${ARCHS[@]}" --show-bin-path)"
 BIN="$BIN_DIR/$APP_NAME"
 
 echo "▸ Assembling $APP_NAME.app…"
