@@ -18,5 +18,9 @@ DerivedData/
 ## Sparkle release tooling (downloaded on demand)
 /.sparkle-tools/
 
+## Never commit signing keys
+sparkle_private_key*
+*.pem
+
 ## macOS
 .DS_Store
