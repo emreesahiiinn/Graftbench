@@ -26,7 +26,7 @@ ARCHS=(arm64 x86_64)
 BINS=()
 BIN_DIR=""
 for arch in "${ARCHS[@]}"; do
-    echo "  • compiling $arch…"
+    echo "  • compiling ${arch} slice…"
     SCRATCH="$ROOT/.build-$arch"
     swift build -c "$CONFIG" --package-path "$ROOT" --arch "$arch" --scratch-path "$SCRATCH"
     BIN_DIR="$(swift build -c "$CONFIG" --package-path "$ROOT" --arch "$arch" --scratch-path "$SCRATCH" --show-bin-path)"
