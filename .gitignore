@@ -15,5 +15,8 @@ DerivedData/
 *.app
 *.dmg
 
+## Sparkle release tooling (downloaded on demand)
+/.sparkle-tools/
+
 ## macOS
 .DS_Store

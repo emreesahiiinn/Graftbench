@@ -1,8 +1,10 @@
 name: Release
 
+# Sparkle releases are cut locally with Scripts/sparkle_release.sh so the DMG
+# Sparkle points at is the exact file that was signed with your private key.
+# This workflow is therefore manual-only (it builds an UNSIGNED DMG, handy for a
+# quick throwaway build) and is intentionally not triggered by pushing a tag.
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:

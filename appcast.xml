@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Graftbench</title>
+    <link>https://raw.githubusercontent.com/emreesahiiinn/Graftbench/main/appcast.xml</link>
+    <description>Graftbench release feed for Sparkle auto-updates.</description>
+    <language>en</language>
+    <!--
+      Release <item> entries are written here by Scripts/sparkle_release.sh
+      (which runs Sparkle's generate_appcast). An empty feed means "no updates".
+    -->
+  </channel>
+</rss>

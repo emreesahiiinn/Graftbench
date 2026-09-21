@@ -35,6 +35,21 @@ if [ -f "$ROOT/Packaging/AppIcon.icns" ]; then
     cp "$ROOT/Packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 fi
 
+# Embed the Sparkle framework (auto-update). SPM links it from an absolute path
+# under .build that won't exist on other Macs, so copy the framework into the
+# bundle and add a portable rpath — without this a downloaded .app can't launch.
+SPARKLE_FW="$(/usr/bin/find "$ROOT/.build" -type d -name 'Sparkle.framework' -path '*macos*' 2>/dev/null | head -1)"
+[ -z "$SPARKLE_FW" ] && SPARKLE_FW="$(/usr/bin/find "$ROOT/.build" -type d -name 'Sparkle.framework' 2>/dev/null | head -1)"
+if [ -n "$SPARKLE_FW" ]; then
+    echo "▸ Embedding Sparkle.framework…"
+    mkdir -p "$APP/Contents/Frameworks"
+    rm -rf "$APP/Contents/Frameworks/Sparkle.framework"
+    cp -R "$SPARKLE_FW" "$APP/Contents/Frameworks/Sparkle.framework"
+    install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/$APP_NAME" 2>/dev/null || true
+else
+    echo "  ⚠︎ Sparkle.framework not found under .build — auto-update will be disabled in this bundle."
+fi
+
 echo "▸ Ad-hoc code signing…"
 codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || echo "  (codesign skipped)"
 
