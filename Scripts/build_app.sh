@@ -15,16 +15,28 @@ DIST="$ROOT/dist"
 APP="$DIST/$APP_NAME.app"
 
 echo "▸ Building ($CONFIG, universal arm64 + x86_64)…"
-ARCHS=(--arch arm64 --arch x86_64)
-swift build -c "$CONFIG" --package-path "$ROOT" "${ARCHS[@]}"
-
-BIN_DIR="$(swift build -c "$CONFIG" --package-path "$ROOT" "${ARCHS[@]}" --show-bin-path)"
-BIN="$BIN_DIR/$APP_NAME"
+# Build each arch on its own, then lipo the results. A single multi-arch
+# `swift build --arch arm64 --arch x86_64` routes through the Xcode build
+# backend, which on recent toolchains aborts before compiling with
+# "Unexpected duplicate tasks" / "duplicate output file …" and an empty
+# SWIFT_VERSION. Per-arch native builds sidestep that entirely; each needs its
+# own scratch path or the second overwrites the first (--show-bin-path is
+# arch-independent).
+ARCHS=(arm64 x86_64)
+BINS=()
+BIN_DIR=""
+for arch in "${ARCHS[@]}"; do
+    echo "  • compiling $arch…"
+    SCRATCH="$ROOT/.build-$arch"
+    swift build -c "$CONFIG" --package-path "$ROOT" --arch "$arch" --scratch-path "$SCRATCH"
+    BIN_DIR="$(swift build -c "$CONFIG" --package-path "$ROOT" --arch "$arch" --scratch-path "$SCRATCH" --show-bin-path)"
+    BINS+=("$BIN_DIR/$APP_NAME")
+done
 
 echo "▸ Assembling $APP_NAME.app…"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BIN" "$APP/Contents/MacOS/$APP_NAME"
+lipo -create "${BINS[@]}" -output "$APP/Contents/MacOS/$APP_NAME"
 cp "$ROOT/Packaging/Info.plist" "$APP/Contents/Info.plist"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
@@ -39,8 +51,10 @@ fi
 # Embed the Sparkle framework (auto-update). SPM links it from an absolute path
 # under .build that won't exist on other Macs, so copy the framework into the
 # bundle and add a portable rpath — without this a downloaded .app can't launch.
-SPARKLE_FW="$(/usr/bin/find "$ROOT/.build" -type d -name 'Sparkle.framework' -path '*macos*' 2>/dev/null | head -1)"
-[ -z "$SPARKLE_FW" ] && SPARKLE_FW="$(/usr/bin/find "$ROOT/.build" -type d -name 'Sparkle.framework' 2>/dev/null | head -1)"
+# Sparkle ships as a universal xcframework artifact, so either arch's scratch
+# dir holds the same (arm64 + x86_64) framework — grab the first match.
+SPARKLE_FW="$(/usr/bin/find "$ROOT"/.build-* -type d -name 'Sparkle.framework' -path '*macos*' 2>/dev/null | head -1)"
+[ -z "$SPARKLE_FW" ] && SPARKLE_FW="$(/usr/bin/find "$ROOT"/.build-* -type d -name 'Sparkle.framework' 2>/dev/null | head -1)"
 if [ -n "$SPARKLE_FW" ]; then
     echo "▸ Embedding Sparkle.framework…"
     mkdir -p "$APP/Contents/Frameworks"
