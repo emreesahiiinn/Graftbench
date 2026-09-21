@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build DMG
+        run: ./Scripts/package_dmg.sh
+
+      - name: Checksum
+        run: |
+          shasum -a 256 dist/Graftbench.dmg | tee dist/Graftbench.dmg.sha256
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/Graftbench.dmg
+            dist/Graftbench.dmg.sha256
+          generate_release_notes: true
+          body: |
+            ## Graftbench ${{ github.ref_name }}
+
+            Download **Graftbench.dmg** below, open it, and drag Graftbench to Applications.
+
+            > The app is ad-hoc signed (not notarized). On first launch, right-click the app → **Open**,
+            > or run `xattr -dr com.apple.quarantine /Applications/Graftbench.app`.
+
+            Created by Emre Şahin.
