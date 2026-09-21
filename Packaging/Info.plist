@@ -33,13 +33,13 @@
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
 
-    <!-- Sparkle auto-update. Replace SUPublicEDKey with the public key printed by
-         `generate_keys` (the private key stays in your Keychain). Until then,
-         update checks will fail signature verification, which is intentional. -->
+    <!-- Sparkle auto-update. SUPublicEDKey is the EdDSA public key; the matching
+         private key lives only in the maintainer's login Keychain and signs each
+         release (see Scripts/sparkle_release.sh). -->
     <key>SUFeedURL</key>
     <string>https://raw.githubusercontent.com/emreesahiiinn/Graftbench/main/appcast.xml</string>
     <key>SUPublicEDKey</key>
-    <string>REPLACE_WITH_SPARKLE_PUBLIC_ED_KEY</string>
+    <string>QcRfyq0rguw1I11wD2LIJjzp37K5BPtfB8RbL21mLnw=</string>
     <key>SUEnableAutomaticChecks</key>
     <true/>
     <key>SUScheduledCheckInterval</key>
