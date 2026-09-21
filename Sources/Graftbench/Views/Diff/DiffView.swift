@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Per-hunk staging actions (present only in the Local Changes context).
 struct HunkActions {
@@ -150,6 +151,20 @@ struct DiffRenderStyle {
 
 // MARK: - Unified
 
+/// Wrap mode fills the viewport width; non-wrap mode pins an explicit,
+/// content-derived width so horizontal scrolling stays aligned and stable.
+private struct StackWidth: ViewModifier {
+    let wrap: Bool
+    let width: CGFloat
+    func body(content: Content) -> some View {
+        if wrap {
+            content.frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            content.frame(width: width, alignment: .leading)
+        }
+    }
+}
+
 private struct UnifiedDiffView: View {
     let hunks: [DiffHunk]
     var actions: HunkActions?
@@ -169,16 +184,41 @@ private struct UnifiedDiffView: View {
                         let selectable = onToggleLine != nil && (line.kind == .addition || line.kind == .deletion)
                         UnifiedLineRow(
                             line: line, language: language, style: style,
-                            selectable: selectable,
+                            selectable: selectable, selectableColumn: selectableColumn,
                             selected: selectedLines.contains(line.id),
                             onToggle: selectable ? { onToggleLine?(line) } : nil
                         )
                     }
                 }
             }
-            .frame(maxWidth: style.wrap ? .infinity : nil, alignment: .leading)
+            // Non-wrap rows scroll horizontally. Give the stack an explicit,
+            // content-derived width so every row shares it: without it the
+            // LazyVStack guesses its width from whichever rows happen to be
+            // realized (short rows vs one very long line) and the whole block
+            // jitters/shifts sideways until a relayout — which is why toggling
+            // wrap "fixed" it. The text is monospaced, so the width is exact.
+            .modifier(StackWidth(wrap: style.wrap, width: contentWidth))
             .padding(.bottom, 8)
         }
+    }
+
+    /// Reserve the selection-checkbox column for every row (even context lines)
+    /// whenever this diff supports line staging, so columns line up.
+    private var selectableColumn: Bool { onToggleLine != nil }
+
+    /// Width of one monospaced character in the diff body font, measured once.
+    private static let charWidth: CGFloat =
+        ("0" as NSString).size(withAttributes: [.font: NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)]).width
+
+    /// Deterministic width of the widest possible row: fixed leading columns
+    /// (optional checkbox + two gutters + marker) plus the longest expanded
+    /// line, with a small margin so the longest line never clips.
+    private var contentWidth: CGFloat {
+        let cols = hunks.reduce(0) { m, hunk in
+            max(m, hunk.lines.reduce(0) { mm, line in max(mm, style.displayText(line.text).count) })
+        }
+        let leading: CGFloat = (selectableColumn ? 16 : 0) + 50 + 50 + 16
+        return leading + CGFloat(cols) * Self.charWidth + 24
     }
 }
 
@@ -218,29 +258,34 @@ private struct UnifiedLineRow: View {
     var language: CodeLanguage = .plain
     var style: DiffRenderStyle
     var selectable: Bool = false
+    /// Whether the diff reserves a selection column at all (keeps context and
+    /// changed lines column-aligned even though only changed lines are tappable).
+    var selectableColumn: Bool = false
     var selected: Bool = false
     var onToggle: (() -> Void)? = nil
 
     var body: some View {
         HStack(spacing: 0) {
-            if selectable {
+            if selectableColumn {
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 9))
                     .foregroundStyle(selected ? Theme.accent : Color.secondary.opacity(0.4))
+                    .opacity(selectable ? 1 : 0)
                     .frame(width: 16)
             }
             gutter(line.oldLineNumber)
             gutter(line.newLineNumber)
             Text(marker).frame(width: 16).foregroundStyle(markerColor)
             contentText.textSelection(.enabled)
+                .fixedSize(horizontal: !style.wrap, vertical: false)
             if !style.wrap { Spacer(minLength: 0) }
         }
         .font(Theme.mono)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(selected ? Theme.accent.opacity(0.12) : background)
         .overlay(alignment: .leading) { if selected { Rectangle().fill(Theme.accent).frame(width: 2) } }
         .contentShape(Rectangle())
         .onTapGesture { onToggle?() }
-        .fixedSize(horizontal: !style.wrap, vertical: false)
     }
 
     private var contentText: Text {
