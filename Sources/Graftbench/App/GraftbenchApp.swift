@@ -22,15 +22,8 @@ struct GraftbenchApp: App {
                 .disabled(!updater.canCheckForUpdates)
             }
 
-            // macOS normally injects "Settings…" from the `Settings` scene
-            // below, but on recent macOS that auto-item can go missing — wire it
-            // explicitly so ⌘, and the menu item are always present.
-            CommandGroup(replacing: .appSettings) {
-                SettingsLink {
-                    Text("Settings…")
-                }
-                .keyboardShortcut(",", modifiers: .command)
-            }
+            // The `Settings` scene below already injects a single "Settings… ⌘,"
+            // item into the app menu; don't add another here or it shows twice.
 
             CommandGroup(replacing: .newItem) {
                 Button("Open Repository…") {
