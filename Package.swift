@@ -18,9 +18,15 @@ let package = Package(
     products: [
         .executable(name: "Graftbench", targets: ["Graftbench"])
     ],
+    dependencies: [
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0")
+    ],
     targets: [
         .executableTarget(
             name: "Graftbench",
+            dependencies: [
+                .product(name: "Sparkle", package: "Sparkle")
+            ],
             path: "Sources/Graftbench",
             resources: [
                 .process("Resources")

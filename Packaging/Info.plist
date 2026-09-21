@@ -15,9 +15,9 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.1.1</string>
+    <string>0.2.0</string>
     <key>CFBundleVersion</key>
-    <string>2</string>
+    <string>3</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>LSMinimumSystemVersion</key>
@@ -32,5 +32,17 @@
     <string>© 2026 Graftbench</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
+
+    <!-- Sparkle auto-update. Replace SUPublicEDKey with the public key printed by
+         `generate_keys` (the private key stays in your Keychain). Until then,
+         update checks will fail signature verification, which is intentional. -->
+    <key>SUFeedURL</key>
+    <string>https://raw.githubusercontent.com/emreesahiiinn/Graftbench/main/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>REPLACE_WITH_SPARKLE_PUBLIC_ED_KEY</string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUScheduledCheckInterval</key>
+    <integer>86400</integer>
 </dict>
 </plist>

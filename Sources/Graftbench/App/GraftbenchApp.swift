@@ -5,6 +5,7 @@ import AppKit
 struct GraftbenchApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var app = AppModel()
+    @StateObject private var updater = Updater()
 
     var body: some Scene {
         WindowGroup {
@@ -14,6 +15,13 @@ struct GraftbenchApp: App {
         }
         .windowToolbarStyle(.unifiedCompact)
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") {
+                    updater.checkForUpdates()
+                }
+                .disabled(!updater.canCheckForUpdates)
+            }
+
             // macOS normally injects "Settings…" from the `Settings` scene
             // below, but on recent macOS that auto-item can go missing — wire it
             // explicitly so ⌘, and the menu item are always present.
